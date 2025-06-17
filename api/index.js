@@ -147,7 +147,7 @@ function tokenize(string) {
 // --- End tokenizer logic ---
 
 // Load dictionary files (synchronously for simplicity)
-const dataDir = path.join(__dirname, '../data');
+const dataDir = path.join(process.cwd(), 'data');
 const dictionaryFiles = [
   'tdict-city.txt',
   'tdict-collection.txt',
