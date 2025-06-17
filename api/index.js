@@ -146,40 +146,44 @@ function tokenize(string) {
 }
 // --- End tokenizer logic ---
 
-// Load dictionary files (synchronously for simplicity)
-const dataDir = path.join(process.cwd(), 'data');
-const dictionaryFiles = [
-  'tdict-city.txt',
-  'tdict-collection.txt',
-  'tdict-common.txt',
-  'tdict-country.txt',
-  'tdict-district.txt',
-  'tdict-geo.txt',
-  'tdict-history.txt',
-  'tdict-ict.txt',
-  'tdict-lang-ethnic.txt',
-  'tdict-proper.txt',
-  'tdict-science.txt',
-  'tdict-spell.txt',
-  'tdict-std-compound.txt',
-  'tdict-std.txt',
-  'compound-words.txt',
-];
-dictionaryFiles.forEach(file => {
-  const filePath = path.join(dataDir, file);
-  if (fs.existsSync(filePath)) {
-    const content = fs.readFileSync(filePath, 'utf8');
-    readDictionary(content);
-  } else {
-    console.log("File not found: ", filePath);
-  }
-});
-console.log("Dictionaries loaded: ", dictionaryFiles.length);
-
+function loadDictionaries() {
+  const dataDir = path.join(process.cwd(), 'data');
+  const dictionaryFiles = [
+    'tdict-city.txt',
+    'tdict-collection.txt',
+    'tdict-common.txt',
+    'tdict-country.txt',
+    'tdict-district.txt',
+    'tdict-geo.txt',
+    'tdict-history.txt',
+    'tdict-ict.txt',
+    'tdict-lang-ethnic.txt',
+    'tdict-proper.txt',
+    'tdict-science.txt',
+    'tdict-spell.txt',
+    'tdict-std-compound.txt',
+    'tdict-std.txt',
+    'compound-words.txt',
+  ];
+  dictionaryFiles.forEach(file => {
+    const filePath = path.join(dataDir, file);
+    if (fs.existsSync(filePath)) {
+      const content = fs.readFileSync(filePath, 'utf8');
+      readDictionary(content);
+    } else {
+      console.log("File not found: ", filePath);
+    }
+  });
+}
 // Enable CORS for all routes
 app.use(cors());
 
 app.get("/tokenize", async (req, res) => {
+
+  loadDictionaries();
+  console.log("Dictionaries with total words: ", Object.keys(thaiWords).length);
+
+
   const text = req.query.text;
   if (typeof text !== 'string') {
     res.status(400).json({ error: 'Missing or invalid "text" query parameter' });
