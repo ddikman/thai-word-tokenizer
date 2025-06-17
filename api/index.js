@@ -174,6 +174,7 @@ dictionaryFiles.forEach(file => {
     console.log("File not found: ", filePath);
   }
 });
+console.log("Dictionaries loaded: ", dictionaryFiles.length);
 
 // Enable CORS for all routes
 app.use(cors());
