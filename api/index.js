@@ -170,6 +170,8 @@ dictionaryFiles.forEach(file => {
   if (fs.existsSync(filePath)) {
     const content = fs.readFileSync(filePath, 'utf8');
     readDictionary(content);
+  } else {
+    console.log("File not found: ", filePath);
   }
 });
 
@@ -182,6 +184,7 @@ app.get("/tokenize", async (req, res) => {
     res.status(400).json({ error: 'Missing or invalid "text" query parameter' });
     return;
   }
+  console.log("Tokenizing text: ", text);
   const result = tokenize(text);
   res.status(200).json({ segmented: result, text: text });
 });
