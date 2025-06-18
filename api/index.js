@@ -69,54 +69,34 @@ function filterSymbols(data) {
 
 function breakThaiWords(string) {
   let words = [];
-  let index = 0;
-  let currentWord = '';
-  let spareWord = '';
-  let badWord = '';
-  let nextWordAble = false;
-  for (let i in string) {
-    let c = string[i];
-    let checkWord = currentWord + c;
-    if (queryWordTree(checkWord)) {
-      currentWord = checkWord;
-      if (thaiWords[currentWord]) {
-        if (badWord != '') {
-          words[index] = badWord.substring(0, badWord.length - 1);
-          badWord = '';
-          index++;
-        }
-        if (compoundWords[checkWord]) {
-          let brokenWords = compoundWords[checkWord];
-          for (let j in brokenWords) {
-            words[index++] = brokenWords[j];
-          }
-          index--;
-        } else {
-          words[index] = checkWord;
-        }
-        spareWord = '';
-      } else {
-        spareWord += c;
-      }
-      nextWordAble = true;
-    } else {
-      if (nextWordAble) {
-        nextWordAble = false;
-        currentWord = spareWord + c;
-        spareWord = c;
-        index++;
-      } else {
-        if (badWord == '') {
-          badWord = currentWord + c;
-        } else {
-          badWord += c;
-        }
-        currentWord = c;
+  let i = 0;
+  while (i < string.length) {
+    let longestWord = '';
+    let longestWordEnd = i;
+    // Try to find the longest word starting at position i
+    for (let j = i + 1; j <= string.length; j++) {
+      let substr = string.slice(i, j);
+      if (thaiWords[substr]) {
+        longestWord = substr;
+        longestWordEnd = j;
       }
     }
-  }
-  if (badWord != '') {
-    words[index] = badWord;
+    if (longestWord) {
+      // If it's a compound word, break it further
+      if (compoundWords[longestWord]) {
+        let brokenWords = compoundWords[longestWord];
+        for (let k = 0; k < brokenWords.length; k++) {
+          words.push(brokenWords[k]);
+        }
+      } else {
+        words.push(longestWord);
+      }
+      i = longestWordEnd;
+    } else {
+      // If no word found, treat single character as unknown
+      words.push(string[i]);
+      i++;
+    }
   }
   return words;
 }
@@ -195,10 +175,16 @@ app.get("/tokenize", async (req, res) => {
   const words = lines.map(line => tokenize(line));
   const segmented = words.map(lineWords => lineWords.join(' ')).join('\n');
 
+  // Check for mismatch: remove spaces and compare
+  const filteredInput = filterSymbols(text).replace(/\s+/g, '');
+  const joinedTokens = words.map(lineWords => lineWords.join('')).join('');
+  const mismatch = filteredInput !== joinedTokens;
+
   res.status(200).json({
     words: words,
     segmented: segmented,
-    text: text
+    text: text,
+    ...(mismatch ? { mismatch: true } : {})
   });
 });
 
