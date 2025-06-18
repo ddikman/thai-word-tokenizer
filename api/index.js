@@ -183,15 +183,23 @@ app.get("/tokenize", async (req, res) => {
   loadDictionaries();
   console.log("Dictionaries with total words: ", Object.keys(thaiWords).length);
 
-
   const text = req.query.text;
   if (typeof text !== 'string') {
     res.status(400).json({ error: 'Missing or invalid "text" query parameter' });
     return;
   }
   console.log("Tokenizing text: ", text);
-  const result = tokenize(text);
-  res.status(200).json({ segmented: result, text: text });
+
+  // Split text by newlines, tokenize each line, and preserve newlines in segmented output
+  const lines = text.split(/\r?\n/);
+  const words = lines.map(line => tokenize(line));
+  const segmented = words.map(lineWords => lineWords.join(' ')).join('\n');
+
+  res.status(200).json({
+    words: words,
+    segmented: segmented,
+    text: text
+  });
 });
 
 
